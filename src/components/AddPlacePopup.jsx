@@ -3,26 +3,23 @@ import PopupWithForm from "./PopupWithForm";
 import {Input} from "./Input";
 
 export const AddPlacePopup = ({isOpen, onClose, onAddCard, isLoading}) => {
-    const [mestoName, setMestoName] = useState('');
-    const [mestoLink, setMestoLink] = useState('');
 
+    const [formState, setFormState] = useState({mestoName:'', mestoURL: ''});
 
     useEffect(() => {
-        handleChangeMestoLink('');
-        handleChangeMestoName('');
+        setFormState({mestoName:'', mestoURL: ''});
 
     }, [isOpen]);
 
-    const handleChangeMestoName = (value) => {
-        setMestoName(value);
-    }
-    const handleChangeMestoLink = (value) => {
-        setMestoLink(value);
+
+    const handleChangeForm = (evt) => {
+        const {name, value} = evt.target;
+        setFormState({...formState, [name]:value})
     }
 
     const handleSubmit = (evt) => {
         evt.preventDefault();
-        onAddCard({name: mestoName, link: mestoLink});
+        onAddCard({name: formState.mestoName, link: formState.mestoURL});
 
     }
     return(
@@ -32,16 +29,16 @@ export const AddPlacePopup = ({isOpen, onClose, onAddCard, isLoading}) => {
                        onSubmit={handleSubmit}
                        isLoading={isLoading}
         >
-            <Input value={mestoName}
+            <Input value={formState.mestoName}
                    placeholder={"Название"}
                    id={"mesto-name"}
                    name={"mestoName"}
-                   onChangeHandler={handleChangeMestoName} />
-            <Input value={mestoLink}
+                   onChangeHandler={handleChangeForm} />
+            <Input value={formState.mestoURL}
                    placeholder={"Ссылка на картинку"}
                    id={"mesto-url"}
                    name={"mestoURL"}
-                   onChangeHandler={handleChangeMestoLink}
+                   onChangeHandler={handleChangeForm}
                    type={"url"}/>
         </PopupWithForm>
     );

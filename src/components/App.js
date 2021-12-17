@@ -7,25 +7,34 @@ import {useEffect, useState} from "react";
 import {CurrentUserContext} from "../contexts/CurrentUserContext";
 import {renderResponse} from "../utils/apiFunctions";
 import {api} from "../utils/Api";
+import * as authApi from '../utils/authApi';
 import {EditProfilePopup} from "./EditProfilePopup";
 import {EditAvatarPopup} from "./EditAvatarPopup";
 import {AddPlacePopup} from "./AddPlacePopup";
-
-
+import {Route, Switch, useHistory} from 'react-router-dom'
+import {ProtectedComponent} from "./ProtectedComponent";
+import {Register} from "./Register";
+import {Login} from "./Login";
+import {AuthnNotificationPopup} from "./AuthNotificationPopup";
+import successIcon from '../source/images/svg-images/success-icon.svg';
+import errorIcon from '../source/images/svg-images/error-icon.svg';
+import {AuthContext} from "../contexts/AuthContext";
 
 function App() {
 
-    const [currentUser, setCurrentUser] = useState({about: '', avatar: '', cohort:'', name:'', _id: ''});
-    useEffect(() => {
-        renderResponse(api.getUserInfo(), (data) => {
-            setCurrentUser(data);
-        }, "#")
-    }, []);
+    const [currentUser, setCurrentUser] = useState({about: '', avatar: '', cohort:'', name:'', _id: '', email: ''});
+
+    // хук для навигации с помощью brouser router
+    const history = useHistory();
+
     const [editProfileState, setEditProfileState] = useState(false);
     const [editAvatarState, setEditAvatarState] = useState(false);
     const [addPlaceState, setAddPlaceState] = useState(false);
+    const [successfulRegState, setSuccessfulRegState] = useState(false);
+    const [errorRegState, setErrorRegState] = useState(false);
     const [selectedCard, setSelectedCard] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [emailNav, setEmailNav] = useState('');
      function   finallyHandler(){
         setIsLoading(false);
     }
@@ -35,7 +44,21 @@ function App() {
         renderResponse(api.getPreloadsCards(), (data)=>{
             setCards(data);
         }, "#")
+        renderResponse(api.getUserInfo(), (data) => {
+            setCurrentUser({...currentUser, about: data.about, avatar: data.avatar, cohort: data.cohort, name: data.name, _id: data._id});
+        }, "#")
+        if(localStorage.getItem('jwt')){
+            const jwt = localStorage.getItem('jwt');
+            authApi.getUserCredentials(jwt).then( ({email, _id}) => {
+                handleLoggedIn();
+                handleEmailNav(email);
+
+                history.push('/');
+            });
+
+        }
     }, []);
+
     // функции обратного вызова для управления поведением карточки
     const handleCardLike = (card) => {
         const isLiked = card.likes.some(like => like._id === currentUser._id);
@@ -89,8 +112,20 @@ function App() {
         }, finallyHandler);
     }
 
+    //обработчики для стейта авторизации
+    const handleLoggedIn = () => {
+        setAuthUser({...authUser, isLoggedIn: true});
+    }
+    const handleLoggOut = () => {
+        setAuthUser({...authUser, isLoggedIn: false});
+    }
+    const handleEmailNav = value => {
+        setEmailNav(value)
+    }
 
-    // функции обратного вызова для окткрытия/закрытия попапов
+    const [authUser, setAuthUser] = useState({isLoggedIn: false, handleLogin: handleLoggedIn, handleQuit: handleLoggOut, handleEmailNav: handleEmailNav});
+
+    // функции обратного вызова для открытия/закрытия попапов
     const handleEditAvatarClick = () => {
         setEditAvatarState(true);
     }
@@ -100,10 +135,18 @@ function App() {
     const handleAddPlaceClick = () => {
         setAddPlaceState(true);
     }
+    const handleSuccessfullReg = () => {
+        setSuccessfulRegState(true);
+    }
+    const handleErrorReg = () => {
+        setErrorRegState(true);
+    }
     const closeAllPopups = () => {
         setEditProfileState(false);
         setAddPlaceState(false);
-        setEditAvatarState(false)
+        setEditAvatarState(false);
+        setSuccessfulRegState(false);
+        setErrorRegState(false);
         setSelectedCard({});
     }
 
@@ -113,37 +156,63 @@ function App() {
 
 
   return (
-      <CurrentUserContext.Provider value={currentUser}>
+      <AuthContext.Provider value={authUser}>
+          <CurrentUserContext.Provider value={currentUser}>
 
-        <Header />
-        <Main onEditProfile={handleEditProfileClick}
-              onAddPlace={handleAddPlaceClick}
-              onEditAvatar={handleEditAvatarClick}
-              onCardClick={handleCardClick}
-              onCardLike={handleCardLike}
-              onCardDelete={handleCardDelete}
-              cards={cards}/>
-        <Footer />
-          <EditProfilePopup isOpen={editProfileState}
-                            onClose={closeAllPopups}
-                            onUserUpdate={handleUpdateUser}
-                            isLoading={isLoading}/>
 
-          <EditAvatarPopup isOpen={editAvatarState}
-                           onClose={closeAllPopups}
-                           onUpdateAvatar={handleUpdateAvatar}
-                           isLoading={isLoading}/>
+              <Switch>
 
-          <AddPlacePopup isOpen={addPlaceState}
-                         onClose={closeAllPopups}
-                         onAddCard={handleAddMestoCard}
-                         isLoading={isLoading}/>
+                  <ProtectedComponent component={Main}
+                                      path="/"
+                                      emailNav={emailNav}
+                                      exact={true}
+                                      onEditProfile={handleEditProfileClick}
+                                      onAddPlace={handleAddPlaceClick}
+                                      onEditAvatar={handleEditAvatarClick}
+                                      onCardClick={handleCardClick}
+                                      onCardLike={handleCardLike}
+                                      onCardDelete={handleCardDelete}
+                                      cards={cards} />
+                  <Route path="/sign-up">
+                      <Header />
+                      <Register onSuccessfullReg={handleSuccessfullReg} onErrorReg={handleErrorReg}/>
+                  </Route>
+                  <Route path="/sign-in">
+                      <Header />
+                      <Login onErrorLoggedIn={handleErrorReg} onEmail={handleEmailNav}/>
+                  </Route>
+              </Switch>
+            <Footer />
+              <EditProfilePopup isOpen={editProfileState}
+                                onClose={closeAllPopups}
+                                onUserUpdate={handleUpdateUser}
+                                isLoading={isLoading}/>
 
-          <PopupWithForm name={"confirm"} title={"Вы уверены?"}/>
+              <EditAvatarPopup isOpen={editAvatarState}
+                               onClose={closeAllPopups}
+                               onUpdateAvatar={handleUpdateAvatar}
+                               isLoading={isLoading}/>
 
-          <ImagePopup card={selectedCard} onClose={closeAllPopups}/>
+              <AddPlacePopup isOpen={addPlaceState}
+                             onClose={closeAllPopups}
+                             onAddCard={handleAddMestoCard}
+                             isLoading={isLoading}/>
 
-      </CurrentUserContext.Provider>
+              <PopupWithForm name={"confirm"} title={"Вы уверены?"}/>
+
+              <ImagePopup card={selectedCard} onClose={closeAllPopups}/>
+
+              <AuthnNotificationPopup name="success-register" isOpen={successfulRegState} onClose={closeAllPopups}>
+                  <img className="popup__reg-icon" src={successIcon} alt="Иконка успешной регистрации"/>
+                  <h2 className="popup__title popup__title_color_black popup__title_type_notification">Вы успешно зарегестрировались!</h2>
+              </AuthnNotificationPopup>
+              <AuthnNotificationPopup name="error-register" isOpen={errorRegState} onClose={closeAllPopups}>
+                  <img className="popup__reg-icon" src={errorIcon} alt="Иконка неуспешной регистрации"/>
+                  <h2 className="popup__title popup__title_color_black popup__title_type_notification">Что-то пошло не так! Попробуйте ещё раз.</h2>
+              </AuthnNotificationPopup>
+
+          </CurrentUserContext.Provider>
+      </AuthContext.Provider>
   );
 }
 

@@ -1,0 +1,18 @@
+.sign-button{
+    padding: 14px 0 14px 0;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 22px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 1);
+    color: #000000;
+    width: 100%;
+    cursor: pointer;
+    border: none;
+
+}
+
+.sign-button:hover{
+    background-color: rgba(255, 255, 255, 0.85);
+}

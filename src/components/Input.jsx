@@ -1,13 +1,13 @@
 import React from "react";
 
-export const Input = ({maxLength, minLength, placeholder, onChangeHandler, value, name, id, type}) => {
+export const Input = ({maxLength, minLength, placeholder, onChangeHandler, value, name, id, type, styleModifier}) => {
 
     const handleChange = (evt) => {
-        onChangeHandler(evt.target.value)
+        onChangeHandler(evt)
     }
     return(
         <>
-            <input className="popup__input"
+            <input className={`popup__input ${styleModifier ? styleModifier : ''}`}
                    value={value}
                    placeholder={placeholder}
                    required

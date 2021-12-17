@@ -10,6 +10,7 @@ export const EditAvatarPopup = ({isOpen, onClose, onUpdateAvatar, isLoading}) =>
         inputRef.current.value = '';
     }
 
+
     return(
         <PopupWithForm name={"edit-avatar"} title={"Обновить аватар"}
                        isOpen={isOpen}

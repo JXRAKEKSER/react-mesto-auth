@@ -7,22 +7,20 @@ import {Input} from "./Input";
 
 export const EditProfilePopup = ({isOpen, onClose, onUserUpdate, isLoading}) => {
     const currentUser = useContext(CurrentUserContext);
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
+
+    const [formState, setFormState] = useState({fio:'', aboutYourself: ''});
     useEffect(() => {
-        setName(currentUser.name);
-        setDescription(currentUser.about)
+        setFormState({fio: currentUser.name, aboutYourself: currentUser.about})
     }, [currentUser]);
-    const handleChangeName = (value) => {
-        setName(value);
+    const handleChange = (evt) => {
+        const {name, value} = evt.target;
+        setFormState({...formState, [name]: value});
     }
-    const handleChangeDescription = (value) => {
-        setDescription(value);
-    }
+
 
     const handleSubmit = (evt) => {
         evt.preventDefault();
-        onUserUpdate({name: name, about: description})
+        onUserUpdate({name: formState['fio'], about: formState['aboutYourself']})
     }
     return(
         <PopupWithForm name={"profile"} title={"Редактировать профиль"}
@@ -33,15 +31,15 @@ export const EditProfilePopup = ({isOpen, onClose, onUserUpdate, isLoading}) => 
         >
             <Input maxLength="40"
                    minLength="2"
-                   onChangeHandler={handleChangeName}
-                   value={name}
+                   onChangeHandler={handleChange}
+                   value={formState['fio']}
                    placeholder="Имя"
                    name="fio"
                    id="profile-name"/>
             <Input maxLength="200"
                    minLength="2"
-                   onChangeHandler={handleChangeDescription}
-                   value={description}
+                   onChangeHandler={handleChange}
+                   value={formState['aboutYourself']}
                    placeholder="О себе"
                    name="aboutYourself"
                    id="profile-about" />
