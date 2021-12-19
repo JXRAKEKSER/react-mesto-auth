@@ -1,13 +1,17 @@
-import React, {useContext} from "react";
+import React, {useContext, useEffect} from "react";
 import Card from "./Card";
 import {CurrentUserContext} from "../contexts/CurrentUserContext";
+import {useRouteMatch} from "react-router-dom";
 
 
 
-function Main({onEditProfile, onAddPlace, onEditAvatar, onCardClick, cards, onCardLike, onCardDelete}){
+function Main({onEditProfile, onAddPlace, onEditAvatar, onCardClick, cards, onCardLike, onCardDelete, onLocation}){
 
     const currentUser = useContext(CurrentUserContext);
-
+    const {path} = useRouteMatch();
+    useEffect(() => {
+        onLocation(path);
+    }, []);
 
     return(
 

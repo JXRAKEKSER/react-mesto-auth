@@ -1,10 +1,14 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Input} from "./Input";
 import {SignButton} from "./SignButton";
-import {Link} from 'react-router-dom'
+import {Link, useRouteMatch} from 'react-router-dom'
 import * as authApi from '../utils/authApi';
-export const Register = ({onSuccessfullReg, onErrorReg}) => {
+export const Register = ({onSuccessfullReg, onErrorReg, onLocation}) => {
     const [formState, setFormState] = useState({email: '', password: ''});
+    const {path} = useRouteMatch();
+    useEffect(() => {
+        onLocation(path)
+    }, []);
     const handleChange = (evt) => {
         const {name, value} = evt.target;
         setFormState({...formState, [name]: value});

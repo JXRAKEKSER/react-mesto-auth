@@ -1,14 +1,19 @@
-import React, {useContext, useState} from "react";
+import React, {useContext, useState, useEffect} from "react";
 import {Input} from "./Input";
 import {SignButton} from "./SignButton";
 import * as authApi from '../utils/authApi';
-import {useHistory} from "react-router-dom";
+import {useHistory, useRouteMatch} from "react-router-dom";
 import {AuthContext} from "../contexts/AuthContext";
-export const Login = ({ onErrorLoggedIn, onEmail }) => {
+export const Login = ({ onErrorLoggedIn, onEmail, onLocation }) => {
 
     const authContext = useContext(AuthContext);
-    const [formState, setFormState] = useState({email: '', password: ''});
     const history = useHistory();
+    const [formState, setFormState] = useState({email: '', password: ''});
+    const {path} = useRouteMatch();
+    useEffect(() => {
+        onLocation(path)
+    }, []);
+
 
     const handleChange = (evt) => {
         const {value, name} = evt.target;
@@ -20,9 +25,9 @@ export const Login = ({ onErrorLoggedIn, onEmail }) => {
             if(data.token){
                 authContext.handleLogin();
                 history.push('/');
-                authApi.getUserCredentials(data.token).then( ({email, _id}) => {
-                    onEmail(email);
-                })
+
+                onEmail(formState.email);
+
             }
         }).catch(() => {
             onErrorLoggedIn();

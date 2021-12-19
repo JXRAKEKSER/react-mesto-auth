@@ -11,7 +11,7 @@ export const EditProfilePopup = ({isOpen, onClose, onUserUpdate, isLoading}) => 
     const [formState, setFormState] = useState({fio:'', aboutYourself: ''});
     useEffect(() => {
         setFormState({fio: currentUser.name, aboutYourself: currentUser.about})
-    }, [currentUser]);
+    }, [currentUser, isOpen]);
     const handleChange = (evt) => {
         const {name, value} = evt.target;
         setFormState({...formState, [name]: value});

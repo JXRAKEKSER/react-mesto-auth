@@ -1,5 +1,12 @@
 const baseURL = 'https://auth.nomoreparties.co';
 
+const checkResponse = (response) => {
+    if(response.ok){
+        return response.json();
+    }
+    return  Promise.reject(response.status);
+}
+
 export const authentication = ({password, email}) => {
     return fetch(`${baseURL}/signup`, {
         method: "POST",
@@ -8,12 +15,7 @@ export const authentication = ({password, email}) => {
         },
         body: JSON.stringify({password, email})
     })
-        .then( response => {
-            if(response.ok){
-                return response.json();
-            }
-           return  Promise.reject(response.status);
-        })
+        .then(checkResponse)
         .then( data => {
             return data;
         })
@@ -26,12 +28,7 @@ export const login = ({password, email}) => {
         },
         body: JSON.stringify({password, email})
     })
-        .then( response => {
-            if(response.ok){
-                return response.json();
-            }
-            return  Promise.reject(response.status);
-        })
+        .then(checkResponse)
         .then( data => {
             if(data.token){
                 localStorage.setItem('jwt', data.token);
@@ -50,12 +47,7 @@ export const getUserCredentials = (jwt) => {
         "Content-Type": "application/json",
         "Authorization" : `Bearer ${jwt}`
         }
-    }).then( response => {
-        if(response.ok){
-            return response.json();
-        }
-        return  Promise.reject(response.status);
-    }).then(({data}) => {
+    }).then(checkResponse).then(({data}) => {
 
         return data
     });

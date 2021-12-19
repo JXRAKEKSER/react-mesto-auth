@@ -12,10 +12,10 @@ import {EditProfilePopup} from "./EditProfilePopup";
 import {EditAvatarPopup} from "./EditAvatarPopup";
 import {AddPlacePopup} from "./AddPlacePopup";
 import {Route, Switch, useHistory} from 'react-router-dom'
-import {ProtectedComponent} from "./ProtectedComponent";
+import {ProtectedRoute} from "./ProtectedRoute";
 import {Register} from "./Register";
 import {Login} from "./Login";
-import {AuthnNotificationPopup} from "./AuthNotificationPopup";
+import {InfoToolTip} from "./InfoToolTip";
 import successIcon from '../source/images/svg-images/success-icon.svg';
 import errorIcon from '../source/images/svg-images/error-icon.svg';
 import {AuthContext} from "../contexts/AuthContext";
@@ -27,6 +27,10 @@ function App() {
     // хук для навигации с помощью brouser router
     const history = useHistory();
 
+    const [location, setLocation] = useState(history.location.pathname);
+    const handleLocation = (value) => {
+        setLocation(value);
+    }
     const [editProfileState, setEditProfileState] = useState(false);
     const [editAvatarState, setEditAvatarState] = useState(false);
     const [addPlaceState, setAddPlaceState] = useState(false);
@@ -86,7 +90,6 @@ function App() {
         setIsLoading(true);
         renderResponse(api.postCard({name: name, link: link}), newCardData => {
             setCards([newCardData, ...cards]);
-            setIsLoading(false);
             closeAllPopups();
         }, finallyHandler);
     }
@@ -97,7 +100,6 @@ function App() {
         setIsLoading(true);
         renderResponse(api.updateUserInfo({fio: name, aboutYourself: about}),data => {
             setCurrentUser({...currentUser, name: data.name, about: data.about})
-            setIsLoading(false);
             closeAllPopups();
         }, finallyHandler);
 
@@ -107,7 +109,6 @@ function App() {
         setIsLoading(true);
         renderResponse(api.updateAvatar({avatar}), data => {
             setCurrentUser({...currentUser, avatar: data.avatar});
-            setIsLoading(false);
             closeAllPopups();
         }, finallyHandler);
     }
@@ -159,12 +160,13 @@ function App() {
       <AuthContext.Provider value={authUser}>
           <CurrentUserContext.Provider value={currentUser}>
 
-
+              <Header emailNav={emailNav} location={location}/>
               <Switch>
 
-                  <ProtectedComponent component={Main}
+                  <ProtectedRoute component={Main}
                                       path="/"
                                       emailNav={emailNav}
+                                      onLocation={handleLocation}
                                       exact={true}
                                       onEditProfile={handleEditProfileClick}
                                       onAddPlace={handleAddPlaceClick}
@@ -174,12 +176,16 @@ function App() {
                                       onCardDelete={handleCardDelete}
                                       cards={cards} />
                   <Route path="/sign-up">
-                      <Header />
-                      <Register onSuccessfullReg={handleSuccessfullReg} onErrorReg={handleErrorReg}/>
+
+                      <Register onSuccessfullReg={handleSuccessfullReg}
+                                onErrorReg={handleErrorReg}
+                                onLocation={handleLocation}/>
                   </Route>
                   <Route path="/sign-in">
-                      <Header />
-                      <Login onErrorLoggedIn={handleErrorReg} onEmail={handleEmailNav}/>
+
+                      <Login onErrorLoggedIn={handleErrorReg}
+                             onEmail={handleEmailNav}
+                             onLocation={handleLocation}/>
                   </Route>
               </Switch>
             <Footer />
@@ -202,14 +208,18 @@ function App() {
 
               <ImagePopup card={selectedCard} onClose={closeAllPopups}/>
 
-              <AuthnNotificationPopup name="success-register" isOpen={successfulRegState} onClose={closeAllPopups}>
-                  <img className="popup__reg-icon" src={successIcon} alt="Иконка успешной регистрации"/>
-                  <h2 className="popup__title popup__title_color_black popup__title_type_notification">Вы успешно зарегестрировались!</h2>
-              </AuthnNotificationPopup>
-              <AuthnNotificationPopup name="error-register" isOpen={errorRegState} onClose={closeAllPopups}>
-                  <img className="popup__reg-icon" src={errorIcon} alt="Иконка неуспешной регистрации"/>
-                  <h2 className="popup__title popup__title_color_black popup__title_type_notification">Что-то пошло не так! Попробуйте ещё раз.</h2>
-              </AuthnNotificationPopup>
+              <InfoToolTip name="success-register"
+                                      isOpen={successfulRegState}
+                                      onClose={closeAllPopups}
+                                      icon={successIcon}
+                                      title="Вы успешно зарегестрировались!"
+                                      alt="Иконка успешной регистрации"/>
+
+              <InfoToolTip name="error-register"
+                                      isOpen={errorRegState}
+                                      onClose={closeAllPopups}
+                                      icon={errorIcon} title="Что-то пошло не так! Попробуйте ещё раз."
+                                      alt="Иконка неуспешной регистрации" />
 
           </CurrentUserContext.Provider>
       </AuthContext.Provider>
