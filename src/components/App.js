@@ -23,7 +23,7 @@ import {AuthContext} from "../contexts/AuthContext";
 function App() {
 
     const [currentUser, setCurrentUser] = useState({about: '', avatar: '', cohort:'', name:'', _id: '', email: ''});
-
+    
     // хук для навигации с помощью brouser router
     const history = useHistory();
 
@@ -45,28 +45,27 @@ function App() {
     // стейт карточек
     const [cards, setCards] = useState([]);
     useEffect(() => {
-        renderResponse(api.getPreloadsCards(), (data)=>{
-            setCards(data);
-        }, "#")
-        renderResponse(api.getUserInfo(), (data) => {
-            setCurrentUser({...currentUser, about: data.about, avatar: data.avatar, cohort: data.cohort, name: data.name, _id: data._id});
-        }, "#")
+        
         if(localStorage.getItem('jwt')){
             const jwt = localStorage.getItem('jwt');
-            authApi.getUserCredentials(jwt).then( ({email, _id}) => {
+            authApi.getUserCredentials(jwt).then( ({_id, name, about, avatar, email}) => {
+                setCurrentUser({...currentUser, about: about, avatar: avatar, name: name, _id: _id});
+                api.setToken(jwt);
                 handleLoggedIn();
                 handleEmailNav(email);
-
+                renderResponse(api.getPreloadsCards(), ({cards})=>{
+                    setCards(cards);
+                }, "#")
                 history.push('/');
-            });
-
+            })
+            .catch(e => console.log(e));
         }
     }, []);
 
+
     // функции обратного вызова для управления поведением карточки
     const handleCardLike = (card) => {
-        const isLiked = card.likes.some(like => like._id === currentUser._id);
-
+        const isLiked = card.likes.some(likeId => likeId === currentUser._id);
         renderResponse(api.changeLikeCardStatus(card._id, !isLiked), newCard => {
             setCards((prevState) => {
                 return prevState.map( stateItem => {
@@ -123,8 +122,17 @@ function App() {
     const handleEmailNav = value => {
         setEmailNav(value)
     }
-
     const [authUser, setAuthUser] = useState({isLoggedIn: false, handleLogin: handleLoggedIn, handleQuit: handleLoggOut, handleEmailNav: handleEmailNav});
+    useEffect(() => {
+        if(authUser.isLoggedIn) {
+            renderResponse(api.getPreloadsCards(), ({cards})=>{
+                setCards(cards);
+            }, "#")
+            renderResponse(api.getUserInfo(), ({_id, name, about, avatar, email})=>{
+                setCurrentUser({...currentUser, about: about, avatar: avatar, name: name, _id: _id});
+            }, "#")
+        }
+    }, [authUser.isLoggedIn])
 
     // функции обратного вызова для открытия/закрытия попапов
     const handleEditAvatarClick = () => {

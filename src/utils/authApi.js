@@ -1,4 +1,4 @@
-const baseURL = 'https://auth.nomoreparties.co';
+const baseURL = 'https://api.mesto.photocard.nomoredomains.work';
 
 const checkResponse = (response) => {
     if(response.ok){
@@ -30,8 +30,8 @@ export const login = ({password, email}) => {
     })
         .then(checkResponse)
         .then( data => {
-            if(data.token){
-                localStorage.setItem('jwt', data.token);
+            if(data.jwt){
+                localStorage.setItem('jwt', data.jwt);
                 return data;
             }else {
                 return;
@@ -47,7 +47,7 @@ export const getUserCredentials = (jwt) => {
         "Content-Type": "application/json",
         "Authorization" : `Bearer ${jwt}`
         }
-    }).then(checkResponse).then(({data}) => {
+    }).then(checkResponse).then((data) => {
 
         return data
     });

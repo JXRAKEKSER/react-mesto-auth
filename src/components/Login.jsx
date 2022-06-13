@@ -2,6 +2,7 @@ import React, {useContext, useState, useEffect} from "react";
 import {Input} from "./Input";
 import {SignButton} from "./SignButton";
 import * as authApi from '../utils/authApi';
+import { api } from "../utils/Api";
 import {useHistory, useRouteMatch} from "react-router-dom";
 import {AuthContext} from "../contexts/AuthContext";
 export const Login = ({ onErrorLoggedIn, onEmail, onLocation }) => {
@@ -22,14 +23,15 @@ export const Login = ({ onErrorLoggedIn, onEmail, onLocation }) => {
     const handleSubmit = (evt) => {
         evt.preventDefault();
         authApi.login(formState).then(data => {
-            if(data.token){
+            if(data.jwt){
+                api.setToken(data.jwt);
                 authContext.handleLogin();
                 history.push('/');
-
                 onEmail(formState.email);
 
             }
-        }).catch(() => {
+        }).catch((error) => {
+            console.log(error);
             onErrorLoggedIn();
         })
     }

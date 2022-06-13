@@ -14,8 +14,8 @@ function Card({onCardClick, onCardLike, onCardDelete, card}){
     const handleDeleteCard = () => {
         onCardDelete(card);
     }
-    const isOwn = card.owner._id === currentUser._id;
-    const isLiked = card.likes.some( like => like._id === currentUser._id);
+    const isOwn = card.owner === currentUser._id;
+    const isLiked = card.likes.some( likeId => likeId === currentUser._id);
     const elementLikeClassName = `element__like ${isLiked ? 'element__like_active' : ''}`;
     return(
         <article className="element">

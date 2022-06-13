@@ -2,7 +2,8 @@ export class Api {
     constructor(options) {
         this._baseURL = options.baseURL;
         this._headers = options.headers;
-        this._checkResponse = this._checkResponse.bind(this)
+        this._checkResponse = this._checkResponse.bind(this);
+        this._token = null;
     }
 
     _checkResponse(response){
@@ -11,13 +12,16 @@ export class Api {
         }
         return Promise.reject(`${response.status} and ${response.url}`);
     }
+    setToken(token){
+      this._token = token;
+    }
 
     getUserInfo() {
         return fetch(`${this._baseURL}users/me`,
             {
                 method: 'GET',
                 headers: {
-                    authorization: this._headers.authorization,
+                    'Authorization': `Bearer ${this._token}`,
                     'Content-type': 'application/json'
                 }
             }).then(this._checkResponse);
@@ -28,7 +32,7 @@ export class Api {
             {
                 method: 'GET',
                 headers: {
-                    authorization: this._headers.authorization,
+                    'Authorization': `Bearer ${this._token}`,
                     'Content-type': 'application/json'
                 }
             }).then(this._checkResponse)
@@ -40,7 +44,7 @@ export class Api {
         return fetch(`${this._baseURL}users/me`, {
             method: 'PATCH',
             headers: {
-                authorization: this._headers.authorization,
+                'Authorization': `Bearer ${this._token}`,
                 'Content-type': 'application/json'
             },
             body:JSON.stringify({
@@ -54,7 +58,7 @@ export class Api {
         return  fetch(`${this._baseURL}cards`, {
             method: 'POST',
             headers:{
-                authorization: this._headers.authorization,
+                'Authorization': `Bearer ${this._token}`,
                 'Content-type': 'application/json'
             },
             body:JSON.stringify({
@@ -67,26 +71,26 @@ export class Api {
         return fetch(`${this._baseURL}cards/${_id}`, {
             method:'DELETE',
             headers:{
-                authorization: this._headers.authorization,
+                'Authorization': `Bearer ${this._token}`,
                 'Content-type': 'application/json'
             }
         }).then(this._checkResponse);
     }
 
     addLike(_id){
-        return fetch(`${this._baseURL}cards/likes/${_id}`, {
+        return fetch(`${this._baseURL}cards/${_id}/likes`, {
             method:'PUT',
             headers:{
-                authorization: this._headers.authorization,
+                'Authorization': `Bearer ${this._token}`,
                 'Content-type': 'application/json'
             }
         }).then(this._checkResponse);
     }
     deleteLike(_id){
-        return fetch(`${this._baseURL}cards/likes/${_id}`, {
+        return fetch(`${this._baseURL}cards/${_id}/likes`, {
             method:'DELETE',
             headers:{
-                authorization: this._headers.authorization,
+                'Authorization': `Bearer ${this._token}`,
                 'Content-type': 'application/json'
             }
         }).then(this._checkResponse);
@@ -95,7 +99,7 @@ export class Api {
         return fetch(`${this._baseURL}users/me/avatar`, {
             method: 'PATCH',
             headers: {
-                authorization: this._headers.authorization,
+                'Authorization': `Bearer ${this._token}`,
                 'Content-type': 'application/json'
             },
             body:JSON.stringify({
@@ -113,7 +117,7 @@ export class Api {
     }
 }
 
-export const api = new Api({ baseURL : 'https://mesto.nomoreparties.co/v1/cohort-29/', headers:{
-        authorization: 'ea8d3eb3-1ee8-45d9-8e72-76d5b1d1c389',
+export const api = new Api({ baseURL : 'https://api.mesto.photocard.nomoredomains.work/', headers:{
+        'Authorization': `Bearer `,
         'Content-Type': 'application/json'
     }});

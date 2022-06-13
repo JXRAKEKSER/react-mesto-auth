@@ -35,7 +35,7 @@ function Main({onEditProfile, onAddPlace, onEditAvatar, onCardClick, cards, onCa
                 </section>
                 <section className="elements page__elements">
                     {cards.map( (card) => {
-
+                        
                         return  (
 
                                 <Card key={card._id}
